@@ -40,6 +40,7 @@ class VariantFeatureConfig:
 
     # Acceptable values in priority order
     values: list[str]
+    multi_value: bool = False
 
 
 class IntelVariantPlugin:
@@ -85,10 +86,7 @@ class IntelVariantPlugin:
             warnings.warn(f"Intel driver stack not installed or malfunctions: {e}", UserWarning, stacklevel=1)
             return []
 
-    def get_supported_configs(
-        self, known_properties: frozenset[VariantPropertyType] | None
-    ) -> list[VariantFeatureConfig]:
-
+    def get_supported_configs(self) -> list[VariantFeatureConfig]:
         keyconfigs: list[VariantFeatureConfig] = []
 
         if devips := self.generate_all_device_ips():
@@ -96,25 +94,20 @@ class IntelVariantPlugin:
                 VariantFeatureConfig(
                     name="device_ip",
                     values=devips,
+                    multi_value=True,
                     )
                 )
 
         return keyconfigs
 
-    def validate_property(self, variant_property: VariantPropertyType) -> bool:
-        assert isinstance(variant_property, VariantPropertyType)
-        assert variant_property.namespace == self.namespace
-
-        if variant_property.feature == "device_ip":
-            return variant_property.value in get_all_ips()
-
-        warnings.warn(
-            "Unknown variant feature received: "
-            f"`{self.namespace} :: {variant_property.feature}`.",
-            UserWarning,
-            stacklevel=1,
-        )
-        return False
+    def get_all_configs(self) -> list[VariantFeatureConfig]:
+        return [
+            VariantFeatureConfig(
+                name="device_ip",
+                values=get_all_ips(),
+                multi_value=True,
+            ),
+        ]
 
 if __name__ == "__main__":
     plugin = IntelVariantPlugin()

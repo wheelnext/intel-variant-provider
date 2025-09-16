@@ -4,6 +4,29 @@ A variant provider plugin for the Wheel Variant upcoming proposed standard
 that enables automatic detection and selection of Intel GPU-optimized
 Python packages.
 
+## Compatibility with package managers
+
+> [!IMPORTANT]
+> This plugin implements support for the specification which is a _work in progress_ and
+> is not intended for production use. It is provided as-is, without guarantees or warranties,
+> and may change, disappear, or stop working at any time.
+>
+> There is no backward compatibility guarantees for the components implementing the proposed
+> specification. Be careful selecting component versions. Below we outline tested combinations
+> of components which are known to work.
+
+At the moment packaging of the wheel variants and queries of the plugins list and their
+metadata is supported by the [variantlib] library. Intel Variant Provider Plugin is currently
+validated with the following version of variantlib:
+* https://github.com/wheelnext/variantlib/commit/75bea8ef4886d5fd4d5282ee5ba6b45f48badd70
+
+Package manager which supports proposed specification is needed to install variant wheels.
+The patched version of pip can be found here:
+* https://github.com/wheelnext/pep_xxx_wheel_variants/tree/e44bf06c26872be158949f93fecb0c8ee762653e/pep_xxx_wheel_variants
+
+The patched version of uv can be found here:
+* https://github.com/astral-sh/uv/pull/12203
+
 ## Detected Hardware Properties
 
 1. GPU Architecture (Compute Capability)
@@ -74,3 +97,4 @@ intel::device_ip::30.1.1
 ```
 
 [ZE_extension_device_ip_version]: https://oneapi-src.github.io/level-zero-spec/level-zero/latest/core/EXT_DeviceIpVersion.html#ze-extension-device-ip-version
+[variantlib]: https://github.com/wheelnext/variantlib
