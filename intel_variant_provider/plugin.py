@@ -20,17 +20,17 @@ class VariantPropertyType(Protocol):
     """A protocol for variant properties"""
 
     @property
-    def namespace(self) -> VariantNamespace:
+    def namespace(cls) -> VariantNamespace:
         """Namespace (from plugin)"""
         raise NotImplementedError
 
     @property
-    def feature(self) -> VariantFeatureName:
+    def feature(cls) -> VariantFeatureName:
         """Feature name (within the namespace)"""
         raise NotImplementedError
 
     @property
-    def value(self) -> VariantFeatureValue:
+    def value(cls) -> VariantFeatureValue:
         """Feature value"""
         raise NotImplementedError
 
@@ -47,8 +47,9 @@ class IntelVariantPlugin:
     namespace = "intel"
     dynamic = False
 
+    @classmethod
     @cache
-    def generate_all_device_ips(self) -> list[str] | None:
+    def generate_all_device_ips(cls) -> list[str] | None:
         pci_vendor_id_intel = 0x8086
 
         if platform.system() not in ["Linux", "Windows"]:
@@ -86,10 +87,11 @@ class IntelVariantPlugin:
             warnings.warn(f"Intel driver stack not installed or malfunctions: {e}", UserWarning, stacklevel=1)
             return []
 
-    def get_supported_configs(self) -> list[VariantFeatureConfig]:
+    @classmethod
+    def get_supported_configs(cls) -> list[VariantFeatureConfig]:
         keyconfigs: list[VariantFeatureConfig] = []
 
-        if devips := self.generate_all_device_ips():
+        if devips := cls.generate_all_device_ips():
             keyconfigs.append(
                 VariantFeatureConfig(
                     name="device_ip",
@@ -100,7 +102,8 @@ class IntelVariantPlugin:
 
         return keyconfigs
 
-    def get_all_configs(self) -> list[VariantFeatureConfig]:
+    @classmethod
+    def get_all_configs(cls) -> list[VariantFeatureConfig]:
         return [
             VariantFeatureConfig(
                 name="device_ip",
@@ -111,4 +114,4 @@ class IntelVariantPlugin:
 
 if __name__ == "__main__":
     plugin = IntelVariantPlugin()
-    print(plugin.get_supported_configs(None))
+    print(plugin.get_supported_configs())
