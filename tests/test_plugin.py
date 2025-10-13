@@ -6,13 +6,18 @@ import pytest
 # to internal module variables (such as _g_zelib).
 import intel_variant_provider.ze as ze
 from intel_variant_provider.devices import _intel_devips
-from intel_variant_provider.plugin import IntelVariantPlugin
+from intel_variant_provider.plugin import IntelVariantPlugin, VariantFeatureConfig
 from intel_variant_provider.ze import *
 
 
 @pytest.fixture
 def plugin() -> IntelVariantPlugin:
     return IntelVariantPlugin()
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    IntelVariantPlugin.generate_all_device_ips.cache_clear()
+
 
 def test_get_all_configs(plugin):
     configs = plugin.get_all_configs()
@@ -40,3 +45,15 @@ class TestGetSupportedConfigs:
         mocker.patch(self.cdll_name, side_effect=OSError("No such file"))
         with pytest.warns(UserWarning):
             assert not plugin.get_supported_configs()
+
+    def test_force_existing_ip(self, plugin, monkeypatch):
+        monkeypatch.setenv("INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP", "12.60.7")
+        assert plugin.get_supported_configs() == [
+            VariantFeatureConfig(name="device_ip", values=["12.60.7"], multi_value=True)
+        ]
+
+    def test_force_invalid_ip(self, plugin, monkeypatch):
+        monkeypatch.setenv("INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP", "12.99.99")
+        with pytest.warns(UserWarning):
+            assert not plugin.get_supported_configs()
+

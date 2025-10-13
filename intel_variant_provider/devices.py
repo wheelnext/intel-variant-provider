@@ -76,7 +76,7 @@ _intel_devips = {
     },
 }
 
-def get_all_ips():
+def get_all_known_ips():
     return list(_intel_devips.keys())
 
 # See: https://github.com/intel/compute-runtime/blob/25.27.34303.6/shared/source/helpers/hw_ip_version.h
