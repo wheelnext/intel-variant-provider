@@ -6,7 +6,6 @@ import platform
 import warnings
 from dataclasses import dataclass
 from functools import cache
-from typing import Protocol, runtime_checkable
 
 from intel_variant_provider.devices import *
 from intel_variant_provider.ze import *
@@ -15,24 +14,6 @@ VariantNamespace = str
 VariantFeatureName = str
 VariantFeatureValue = str
 
-@runtime_checkable
-class VariantPropertyType(Protocol):
-    """A protocol for variant properties"""
-
-    @property
-    def namespace(cls) -> VariantNamespace:
-        """Namespace (from plugin)"""
-        raise NotImplementedError
-
-    @property
-    def feature(cls) -> VariantFeatureName:
-        """Feature name (within the namespace)"""
-        raise NotImplementedError
-
-    @property
-    def value(cls) -> VariantFeatureValue:
-        """Feature value"""
-        raise NotImplementedError
 
 @dataclass(frozen=True)
 class VariantFeatureConfig:
