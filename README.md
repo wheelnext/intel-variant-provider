@@ -53,6 +53,12 @@ powershell -c { $env:INSTALLER_DOWNLOAD_URL = 'https://wheelnext.astral.sh/v0.0.
    * Each value (`<ip>`) in the list represents human readable form of
      Intel hardware device IP (GMDID) quariable via Level Zero [ZE_extension_device_ip_version]
 
+## Environment variables
+
+`INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP` allows to override GPU architecture detection
+performed by plugin. **DISCLAIMER:** this is debug and test purpose variable as it can
+lead to a non-functional installation.
+
 ## WheelNext package index
 
 [WheelNext] initiative supports aggregated index of the packages which are enabled with variant providers.
@@ -75,7 +81,7 @@ namespace = ["intel"]
 
 [variant.providers.intel]
 requires = ["intel_variant_provider"]
-enable-if = "platform_system == 'Linux'"
+enable-if = "platform_system == 'Linux' or platform_system == 'Windows'"
 plugin-api = "intel_variant_provider.plugin:IntelVariantPlugin"
 ```
 
