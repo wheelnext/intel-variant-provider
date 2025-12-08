@@ -34,13 +34,13 @@ best efforts. Run the following to install compatible version of `uv`:
 * On Linux:
 
 ```
-curl -LsSf https://astral.sh/uv/install.sh | INSTALLER_DOWNLOAD_URL=https://wheelnext.astral.sh/v0.0.2 sh
+curl -LsSf https://astral.sh/uv/install.sh | INSTALLER_DOWNLOAD_URL=https://wheelnext.astral.sh/v0.0.3 sh
 ```
 
 * On Windows:
 
 ```
-powershell -c { $env:INSTALLER_DOWNLOAD_URL = 'https://wheelnext.astral.sh/v0.0.2'; irm https://astral.sh/uv/install.ps1 | iex }
+powershell -c { $env:INSTALLER_DOWNLOAD_URL = 'https://wheelnext.astral.sh/v0.0.3'; irm https://astral.sh/uv/install.ps1 | iex }
 ```
 
 ## Detected Hardware Properties
