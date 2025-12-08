@@ -18,6 +18,14 @@ import ctypes
 # * `compat_name` - name assigned to device IP of the base platform. This name
 #   is used in `ocloc` compiler to build code for the base platform.
 _intel_devips = {
+    "30.1.0": {
+        "devices": ["ptl-u"],
+        "compat": "30.0.4",
+    },
+    "30.0.4": {
+        "devices": ["ptl-h"],
+        "compat_name": "ptl",
+    },
     "20.4.4": {
         "devices": ["lnl-m"],
         "compat": "20.1.0",
