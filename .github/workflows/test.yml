@@ -19,9 +19,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: 'Install variantlib'
       run: |
-        # aligning version if variantlib with the one used in this project:
+        # aligning version of variantlib with the one used in this project:
         # * https://github.com/wheelnext/pep_xxx_wheel_variants
-        python3 -m pip install git+https://github.com/wheelnext/variantlib@8a65f31
+        python3 -m pip install git+https://github.com/wheelnext/variantlib@88d5b80f2bb43317ddceddcd9054eda0e3965944
     - name: 'Install project'
       run: |
         python3 --version

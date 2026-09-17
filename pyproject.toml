@@ -25,7 +25,7 @@ test = [
 Home = "https://github.com/wheelnext/intel-variant-provider/"
 
 [project.entry-points.variant_plugins]
-intel_variant_provider = "intel_variant_provider.plugin:IntelVariantPlugin"
+intel = "intel_variant_provider.plugin:IntelVariantPlugin"
 
 [tool.ruff.lint]
     select = ["E", "F", "I"]
