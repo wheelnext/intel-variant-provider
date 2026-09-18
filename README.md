@@ -45,7 +45,7 @@ powershell -c { $env:INSTALLER_DOWNLOAD_URL = 'https://wheelnext.astral.sh/v0.0.
 
 ## Provided Properties
 
-### `intel::device_ip`
+### `intel::gt_gmdid`
 
 Values: `30.0.0`, `30.0.4`, ...
 
@@ -72,7 +72,7 @@ values.
 
 ## Environment variables
 
-`INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP` allows to override GPU architecture detection
+`INTEL_VARIANT_PROVIDER_FORCE_GT_GMDID` allows to override GPU architecture detection
 performed by plugin. **DISCLAIMER:** this is debug and test purpose variable as it can
 lead to a non-functional installation.
 
@@ -134,18 +134,18 @@ Matched ids:
 
 For Python package to target specific Intel architectures using XPU variant
 provider plugin, it's required to build package variants for these
-architectures and set `intel::device_ip::<ip>` properties accordingly. For the
+architectures and set `intel::gt_gmdid::<gt_gmdid>` properties accordingly. For the
 above example of `bmg` and `xe3` that would be:
 
 ```
 # for bmg variant:
-intel::device_ip::20.1.0
+intel::gt_gmdid::20.1.0
 
 # for xe3 variant:
-intel::device_ip::30.0.0
-intel::device_ip::30.0.4
-intel::device_ip::30.1.0
-intel::device_ip::30.1.1
+intel::gt_gmdid::30.0.0
+intel::gt_gmdid::30.0.4
+intel::gt_gmdid::30.1.0
+intel::gt_gmdid::30.1.1
 ```
 
 ## License
