@@ -49,13 +49,13 @@ powershell -c { $env:INSTALLER_DOWNLOAD_URL = 'https://wheelnext.astral.sh/v0.0.
 
    * Determines the compute capability available on the system.
    * Resolves with compute capability compatibility in mind.
-   * Returns feature list in the form of `intel::device_ip::<ip>`
-   * Each value (`<ip>`) in the list represents human readable form of
-     Intel hardware device IP (GMDID) quariable via Level Zero [ZE_extension_device_ip_version]
+   * Returns feature list in the form of `intel::gmdid::<gmdid>`
+   * Each value (`<gmdid>`) in the list represents human readable form of
+     Intel hardware GMDID quariable via Level Zero [ZE_extension_device_ip_version]
 
 ## Environment variables
 
-`INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP` allows to override GPU architecture detection
+`INTEL_VARIANT_PROVIDER_FORCE_GMDID` allows to override GPU architecture detection
 performed by plugin. **DISCLAIMER:** this is debug and test purpose variable as it can
 lead to a non-functional installation.
 
@@ -85,20 +85,20 @@ enable-if = "platform_system == 'Linux' or platform_system == 'Windows'"
 plugin-api = "intel_variant_provider.plugin:IntelVariantPlugin"
 ```
 
-## Understanding Intel Device IP Values
+## Understanding Intel GMDID Values
 
-Device IP is an identifier (GMDID) assigned to differentiate architectures of
-compute platforms of Intel GPU devices. Few different Intel GPU devices (with
-the different device IDs) might be built on the same compute platform.
+GMDID is an identifier assigned to differentiate architectures of compute
+platforms of Intel GPU devices. Few different Intel GPU devices (with the
+different device IDs) might be built on the same compute platform.
 
-Programmatically device IP can be queried for each Intel GPU device using
+Programmatically GMDID can be queried for each Intel GPU device using
 Level Zero [ZE_extension_device_ip_version] API. Returned value format is
 Intel specific and requires conversion to human readable form.
 
 Intel offline compiler (`ocloc`) generates code for one or few target compute
 platforms passed in `-device <device_type>` argument. Each `<device type>` in
-the list can be set as Device IP or via acronym name internally mapped to the
-respective Device IP. To query Device IP(s) for the specific acronym
+the list can be set as GMDID or via acronym name internally mapped to the
+respective GMDID. To query GMDID(s) for the specific acronym
 `ocloc ids` command can be used. For example:
 
 ```
@@ -116,18 +116,18 @@ Matched ids:
 
 For Python package to target specific Intel architectures using XPU variant
 provider plugin, it's required to build package variants for these
-architectures and set `intel::device_ip::<ip>` properties accordingly. For the
+architectures and set `intel::gmdid::<gmdid>` properties accordingly. For the
 above example of `bmg` and `xe3` that would be:
 
 ```
 # for bmg variant:
-intel::device_ip::20.1.0
+intel::gmdid::20.1.0
 
 # for xe3 variant:
-intel::device_ip::30.0.0
-intel::device_ip::30.0.4
-intel::device_ip::30.1.0
-intel::device_ip::30.1.1
+intel::gmdid::30.0.0
+intel::gmdid::30.0.4
+intel::gmdid::30.1.0
+intel::gmdid::30.1.1
 ```
 
 ## License

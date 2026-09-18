@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import platform
 import warnings
 from dataclasses import dataclass
@@ -24,9 +25,9 @@ class VariantFeatureConfig:
     multi_value: bool = False
 
 
-def getAllUniqueDeviceIPs():
+def getAllUniqueGmdids():
     pci_vendor_id_intel = 0x8086
-    devips = []
+    gmdids = []
     try:
         desc = c_ze_init_driver_type_desc_t()
         desc.flags = ZE_INIT_DRIVER_TYPE_FLAG_GPU
@@ -35,18 +36,18 @@ def getAllUniqueDeviceIPs():
         for driver in drivers:
             devices = zeDeviceGet(driver)
             for device in devices:
-                devip = c_ze_device_ip_version_ext_t()
-                props = zeDeviceGetProperties(device, [devip])
+                devip_version = c_ze_device_ip_version_ext_t()
+                props = zeDeviceGetProperties(device, [devip_version])
                 if props.vendorId == pci_vendor_id_intel:
-                    devip = IntelDeviceIp(devip.ipVersion)
-                    for ip in devip.get_all_compat_ips():
-                        # We must return list of unique IPs as a requirement
+                    gmdid = GMDID(devip_version.ipVersion)
+                    for compat_gmdid in gmdid.get_all_compatible_gmdids():
+                        # We must return list of unique GMDIDs as a requirement
                         # of variantlib.
-                        if ip not in devips:
-                            devips.append(ip)
+                        if compat_gmdid not in gmdids:
+                            gmdids.append(compat_gmdid)
     except Exception as e:
         warnings.warn(f"Intel driver stack not installed or malfunctions: {e}", UserWarning, stacklevel=1)
-    return devips
+    return gmdids
 
 
 class IntelVariantPlugin:
@@ -55,41 +56,41 @@ class IntelVariantPlugin:
 
     @classmethod
     @cache
-    def generate_all_device_ips(cls) -> list[str] | None:
+    def generate_all_gmdids(cls) -> list[str] | None:
         if platform.system() not in ["Linux", "Windows"]:
-            warnings.warn(f"Unsupported OS: {system}", UserWarning, stacklevel=1)
+            warnings.warn(f"Unsupported OS: {platform.system()}", UserWarning, stacklevel=1)
             return []
 
-        devip = os.getenv("INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP")
-        if devip:
-            unique_devips = [devip]
+        forced_gmdid = os.getenv("INTEL_VARIANT_PROVIDER_FORCE_GMDID")
+        if forced_gmdid:
+            unique_gmdids = [forced_gmdid]
         else:
-            unique_devips = getAllUniqueDeviceIPs()
+            unique_gmdids = getAllUniqueGmdids()
 
-        devips = []
-        known_ips = get_all_known_ips()
-        for ip in unique_devips:
-            # Filter out devices which IPs are not explicitly
+        gmdids = []
+        known_gmdids = get_all_known_gmdids()
+        for gmdid in unique_gmdids:
+            # Filter out devices which GMDIDs are not explicitly
             # known to plugin. This gives consistency with the
             # check in validate_property().
-            if ip not in known_ips:
-                warnings.warn(f"Intel device with {ip} device IP is filtered out as not known to plugin)")
+            if gmdid not in known_gmdids:
+                warnings.warn(f"Intel device with {gmdid} GMDID is filtered out as not known to plugin)")
             else:
-                devips.append(ip)
+                gmdids.append(gmdid)
 
-        if not devips:
+        if not gmdids:
             warnings.warn("No Intel GPU detected", UserWarning, stacklevel=1)
-        return devips
+        return gmdids
 
     @classmethod
     def get_supported_configs(cls) -> list[VariantFeatureConfig]:
         keyconfigs: list[VariantFeatureConfig] = []
 
-        if devips := cls.generate_all_device_ips():
+        if gmdids := cls.generate_all_gmdids():
             keyconfigs.append(
                 VariantFeatureConfig(
-                    name="device_ip",
-                    values=devips,
+                    name="gmdid",
+                    values=gmdids,
                     multi_value=True,
                     )
                 )
@@ -100,8 +101,8 @@ class IntelVariantPlugin:
     def get_all_configs(cls) -> list[VariantFeatureConfig]:
         return [
             VariantFeatureConfig(
-                name="device_ip",
-                values=get_all_known_ips(),
+                name="gmdid",
+                values=get_all_known_gmdids(),
                 multi_value=True,
             ),
         ]
