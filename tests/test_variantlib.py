@@ -1,3 +1,5 @@
+# Copyright (c) 2025-2026 Intel Corporation
+
 import json
 import subprocess
 from pathlib import Path
@@ -19,7 +21,7 @@ def test_all_valid_configs(tmp_path):
     assert "intel" in configs
     assert len(configs["intel"]) == 1
     for prop in configs["intel"]:
-        assert prop["name"] == "device_ip"
+        assert prop["name"] == "gt_gmdid"
         assert prop["values"]
         assert prop["multi_value"]
 
@@ -35,6 +37,6 @@ def test_supported_configs(tmp_path):
         assert "intel" in configs
         assert len(configs["intel"]) == 1
         for prop in configs["intel"]:
-            assert prop["name"] == "device_ip"
+            assert prop["name"] == "gt_gmdid"
             assert prop["values"]
             assert prop["multi_value"]
