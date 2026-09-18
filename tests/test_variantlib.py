@@ -19,7 +19,7 @@ def test_all_valid_configs(tmp_path):
     assert "intel" in configs
     assert len(configs["intel"]) == 1
     for prop in configs["intel"]:
-        assert prop["name"] == "device_ip"
+        assert prop["name"] == "gmdid"
         assert prop["values"]
         assert prop["multi_value"]
 
@@ -35,6 +35,6 @@ def test_supported_configs(tmp_path):
         assert "intel" in configs
         assert len(configs["intel"]) == 1
         for prop in configs["intel"]:
-            assert prop["name"] == "device_ip"
+            assert prop["name"] == "gmdid"
             assert prop["values"]
             assert prop["multi_value"]

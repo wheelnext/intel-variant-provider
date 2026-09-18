@@ -5,7 +5,7 @@ import pytest
 # Importing the whole module to be able to access modifications
 # to internal module variables (such as _g_zelib).
 import intel_variant_provider.ze as ze
-from intel_variant_provider.devices import _intel_devips
+from intel_variant_provider.devices import _GmdIDs
 from intel_variant_provider.plugin import IntelVariantPlugin, VariantFeatureConfig
 from intel_variant_provider.ze import *
 
@@ -16,14 +16,14 @@ def plugin() -> IntelVariantPlugin:
 
 @pytest.fixture(autouse=True)
 def clear_cache():
-    IntelVariantPlugin.generate_all_device_ips.cache_clear()
+    IntelVariantPlugin.generate_all_gmdids.cache_clear()
 
 
 def test_get_all_configs(plugin):
     configs = plugin.get_all_configs()
     assert len(configs) == 1
-    assert configs[0].name == "device_ip"
-    assert configs[0].values == list(_intel_devips.keys())
+    assert configs[0].name == "gmdid"
+    assert configs[0].values == list(_GmdIDs.keys())
 
 
 class TestGetSupportedConfigs:
@@ -46,14 +46,14 @@ class TestGetSupportedConfigs:
         with pytest.warns(UserWarning):
             assert not plugin.get_supported_configs()
 
-    def test_force_existing_ip(self, plugin, monkeypatch):
-        monkeypatch.setenv("INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP", "12.60.7")
+    def test_force_existing_gmdid(self, plugin, monkeypatch):
+        monkeypatch.setenv("INTEL_VARIANT_PROVIDER_FORCE_GMDID", "12.60.7")
         assert plugin.get_supported_configs() == [
-            VariantFeatureConfig(name="device_ip", values=["12.60.7"], multi_value=True)
+            VariantFeatureConfig(name="gmdid", values=["12.60.7"], multi_value=True)
         ]
 
-    def test_force_invalid_ip(self, plugin, monkeypatch):
-        monkeypatch.setenv("INTEL_VARIANT_PROVIDER_FORCE_DEVICE_IP", "12.99.99")
+    def test_force_invalid_gmdid(self, plugin, monkeypatch):
+        monkeypatch.setenv("INTEL_VARIANT_PROVIDER_FORCE_GMDID", "12.99.99")
         with pytest.warns(UserWarning):
             assert not plugin.get_supported_configs()
 
