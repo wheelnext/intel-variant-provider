@@ -2,21 +2,43 @@
 
 import ctypes
 
-# Dictionary describing Intel device IPs (platforms).
+# Intel GT GMDID identifiers are device hardware identifiers used by Intel GPUs to
+# track and identify the specific architecture versions of its subcomponents such
+# as Graphics (GT GMDID) and Media (Media GMDID). GT GMDIDs provide a way to
+# differentiate compute capabilities of Intel GPUs.
 #
-# Dictionary keys are represented by device IP versions which can be queried
-# with Level Zero "ZE_extension_device_ip_version" API. Version value format
-# is driver specific and requires decoding to the human readable format we
-# use in the table below. For Intel devices values encode GMDID identifiers.
+# Programmatically GT GMDIDs can be queried using Intel device driver APIs. With
+# Level Zero C++ API this can be done with `ZE_extension_device_ip_version`:
 #
-# Dictionary values provide the following information for each device IP:
-# * `devices` - list of strings each representing device name built with this
-#   device IP. These names are synonims which can be used in `ocloc` compiler
-#   to build code for this device IP.
-# * `compat` - device IP of the base platform. Code for the base platform can
-#   be executed on all the platforms with the same compatible name.
-# * `compat_name` - name assigned to device IP of the base platform. This name
-#   is used in `ocloc` compiler to build code for the base platform.
+# * https://oneapi-src.github.io/level-zero-spec/level-zero/latest/core/EXT_DeviceIpVersion.html#ze-extension-device-ip-version
+#
+# The "Device IP Version" (IP here stands for Intellectual Property) is used by
+# Intel driver APIs to abstract the concept of the version by which GPU
+# architectures can be identified. "Device IP Version" is defined by specific
+# driver implementation. For Intel GPUs it resolves to GT GMDID values.
+#
+# With command line tools GT GMDIDs of Intel GPUs can be queried from the
+# platfom acronym names with the `ocloc`. For example:
+#
+#   $ ocloc ids bmg
+#   Matched ids:
+#   20.1.0
+#
+# GT GMDIDs can further be directly passed to the `ocloc` AOT compiler:
+#
+#   $ ocloc compiler -device 20.1.0 ...
+
+
+# Dictionary keys are GT GMDIDs of the Intel devices known to this plugin.
+#
+# Dictionary values provide the following information for each GT GMDID:
+# * `devices` - list of device acronym names corresponding to the given GT GMDID.
+#   These acronyms can be used in `ocloc` compiler interchangable with GT GMDIDs to
+#   identify devices to compiler for.
+# * `compat` - GT GMDID of the base platform. Device code built for the base
+#   platform can be executed on all the platforms inherited from the base platform.
+# * `compat_name` - acronym name assigned to GT GMDID of the base platform. This name
+#   can be used in `ocloc` compiler to build code for the base platform.
 _intel_devips = {
     "35.11.0": {
         "devices": ["cri"],
@@ -102,21 +124,11 @@ _intel_devips = {
     },
 }
 
-def get_all_known_ips():
+def get_all_known_ips() -> list[str]:
     return list(_intel_devips.keys())
 
-# See: https://github.com/intel/compute-runtime/blob/25.27.34303.6/shared/source/helpers/hw_ip_version.h
-class c_intelIPVersion_t(ctypes.Union):
-    _fields_ = [
-        ("revision", ctypes.c_uint32, 6),
-        ("reserved", ctypes.c_uint32, 8),
-        ("release", ctypes.c_uint32, 8),
-        ("architecture", ctypes.c_uint32, 10),
-        ("value", ctypes.c_uint32)
-    ]
-
-# NOTE: The better way would be to inherit from ctypes.Union and use bit fields.
-# NOTE: Unfortunately python ctypes seems to have bug handling bit fields...
+# The better way would be to inherit from ctypes.Union and use bit fields.
+# Unfortunately python ctypes has a bug handling bit fields...
 class IntelDeviceIp:
     # See: https://github.com/intel/compute-runtime/blob/25.27.34303.6/shared/source/helpers/hw_ip_version.h
     ip_version = 0
@@ -124,23 +136,37 @@ class IntelDeviceIp:
     release = 0
     architecture = 0
 
-    def __init__(self, devip: ctypes.c_uint32):
-        self.ip_version = devip
-        self.revision = devip & 0x3F  # 6 bits value
-        self.release = (devip >> 14) & 0xFF
-        self.architecture = devip >> 22
+    def __init__(self, devip_version: ctypes.c_uint32) -> None:
+        # For the definition of Device IP Version, see:
+        #   * https://github.com/intel/compute-runtime/blob/25.27.34303.6/shared/source/helpers/hw_ip_version.h
+        #
+        # struct
+        # {
+        #    uint32_t revision : 6;
+        #    uint32_t reserved : 8;
+        #    uint32_t release : 8;
+        #    uint32_t architecture : 10;
+        # };
+        self.ip_version = devip_version
+        self.revision = devip_version & 0x3F  # 6 bits value
+        self.release = (devip_version >> 14) & 0xFF
+        self.architecture = devip_version >> 22
 
-    def __str__(self):
+    def __str__(self)-> str:
         return f"{self.architecture}.{self.release}.{self.revision}"
 
-    def get_compat(self):
+    # Returns GT GMDID of the base platform if available, empty string otherwise.
+    def get_compat(self) -> str:
         ip = str(self)
         if ip in _intel_devips:
             if "compat" in _intel_devips[ip]:
                 return _intel_devips[ip]["compat"]
         return ""
 
-    def get_all_compat_ips(self):
+    # Returns list of all compatible GT GMDIDs. Device code built for the
+    # compatible GT GMDID can be executed on the device represented by
+    # this GT GMDID.
+    def get_all_compat_ips(self) -> list[str]:
         ips = [ str(self) ]
         compat = self.get_compat()
         if compat:

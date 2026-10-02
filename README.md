@@ -43,15 +43,32 @@ curl -LsSf https://astral.sh/uv/install.sh | INSTALLER_DOWNLOAD_URL=https://whee
 powershell -c { $env:INSTALLER_DOWNLOAD_URL = 'https://wheelnext.astral.sh/v0.0.3'; irm https://astral.sh/uv/install.ps1 | iex }
 ```
 
-## Detected Hardware Properties
+## Provided Properties
 
-* GPU Architecture (Compute Capability)
+### `intel::device_ip`
 
-   * Determines the compute capability available on the system.
-   * Resolves with compute capability compatibility in mind.
-   * Returns feature list in the form of `intel::device_ip::<ip>`
-   * Each value (`<ip>`) in the list represents human readable form of
-     Intel hardware device IP (GMDID) quariable via Level Zero [ZE_extension_device_ip_version]
+Values: `30.0.0`, `30.0.4`, ...
+
+Specifies the GPU architecture (compute capability) the wheel is built for. Each value is a human
+readable form of Intel's GT (Graphics Technology) GMDID (Graphics Media Descriptor ID). In Intel
+documentation and driver APIs these values are also referenced as device IP (Intellectual Property)
+versions.
+
+## Detection
+
+Detection is backed by [Level Zero] C++ API which is being utilized by the provider plugin loading the
+system installed Level Zero library via `ctypes.CDLL()` and querying the required information
+via designated Level Zero API. Note that the Level Zero library is a driver loader library. Actual
+hardware detection is done by the platform driver (user space library) identified and loaded by the
+Level Zero library.
+
+| OS | Level Zero loading details |
+| --- | --- |
+| Linux | `libze_loader.so.1` is loaded with `ctypes.CDLL()` using default search algorithm. The [ZE_extension_device_ip_version] API is used to query for the GT GMDID values |
+| Windows | `ze_loader.dll` is loaded with `ctypes.CDLL()` from `$WINDIR\System32` with `$WINDIR=C:\Windows` being default |
+
+After Level Zero loading, the [ZE_extension_device_ip_version] API is used to query for the GT GMDID
+values.
 
 ## Environment variables
 
@@ -85,21 +102,22 @@ enable-if = "platform_system == 'Linux' or platform_system == 'Windows'"
 plugin-api = "intel_variant_provider.plugin:IntelVariantPlugin"
 ```
 
-## Understanding Intel Device IP Values
+## Intel GT GMDID Values
 
-Device IP is an identifier (GMDID) assigned to differentiate architectures of
+GT GMDID is an identifier assigned to differentiate architectures of
 compute platforms of Intel GPU devices. Few different Intel GPU devices (with
-the different device IDs) might be built on the same compute platform.
+the different device IDs) might be built on the same compute platform
+architecture.
 
-Programmatically device IP can be queried for each Intel GPU device using
-Level Zero [ZE_extension_device_ip_version] API. Returned value format is
-Intel specific and requires conversion to human readable form.
+Programmatically GT GMDID can be queried for each Intel GPU device using
+Level Zero [ZE_extension_device_ip_version] API. The returned Device IP Version
+value is the integer representation of GT GMDID on Intel platforms.
 
 Intel offline compiler (`ocloc`) generates code for one or few target compute
 platforms passed in `-device <device_type>` argument. Each `<device type>` in
-the list can be set as Device IP or via acronym name internally mapped to the
-respective Device IP. To query Device IP(s) for the specific acronym
-`ocloc ids` command can be used. For example:
+the list can be set as GT GMDID or as respective platform acronym name
+internally mapped to the GT GMDID of the platform. To query GT GMDID for the
+specific acronym, `ocloc ids` command can be used. For example:
 
 ```
 $ ocloc ids bmg
@@ -134,6 +152,7 @@ intel::device_ip::30.1.1
 
 This project is licensed under the Apache 2 License - see the [LICENSE](LICENSE) file for details.
 
+[Level Zero]: https://github.com/oneapi-src/level-zero
 [ZE_extension_device_ip_version]: https://oneapi-src.github.io/level-zero-spec/level-zero/latest/core/EXT_DeviceIpVersion.html#ze-extension-device-ip-version
 
 [variantlib]: https://github.com/wheelnext/variantlib
