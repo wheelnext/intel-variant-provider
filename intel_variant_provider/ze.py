@@ -1,6 +1,6 @@
 # Copyright (c) 2025 Intel Corporation
 
-# Minimal Python binding for the Intel Level Zero library:
+# Minimal Python binding for the Intel Level Zero C++ library:
 # * https://github.com/oneapi-src/level-zero
 #
 # Binding works for Windows and Linux. On Linux Level Zero library is loaded
