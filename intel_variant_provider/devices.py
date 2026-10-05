@@ -152,7 +152,7 @@ class IntelDeviceIp:
         self.release = (devip_version >> 14) & 0xFF
         self.architecture = devip_version >> 22
 
-    def __str__(self)-> str:
+    def __str__(self) -> str:
         return f"{self.architecture}.{self.release}.{self.revision}"
 
     # Returns GT GMDID of the base platform if available, empty string otherwise.
